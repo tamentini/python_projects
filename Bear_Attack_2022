@@ -1,9 +1,9 @@
 #This is a short "demo" of a game I created which runs on python 2. 
 #python 2 is all that is required to run this code.
 
-#This is a game that I had started making several years ago when first learning how to use python. As my skills have advanced, 
-#I picked it up again recently and managed to incorporate some pretty neat things like dynamic string updates using threading and os.write. 
-#I will continue to update the code sporadically, looking for ways to increase efficiency and hopefully add some more cool python tricks. 
+#This is a game that I had started making several years ago when first learning how to use python. As my skills have advanced, I
+#picked it up again recently and managed to incorporate some pretty neat things like dynamic string updates using threading and os.write. 
+#I will continue to update the code sporadically looking for ways to increase efficiency and hopefully add some more cool python tricks. 
 #As my ultimate goal is towards a career in the world of data science, I am, for now, going to move on to other types of projects.
 
 #Thank you! 
