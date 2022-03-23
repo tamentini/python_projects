@@ -1,0 +1,417 @@
+from sys import exit
+import random
+import threading
+import sys
+import time
+import thread
+import os
+
+g_nTotal = 100
+g_nProcessed = 0
+g_nProcessedBEAR = 0
+variable = 0
+g_fStartTime = time.time()
+prog_u = 0
+prog_B = 0
+bars = "          "
+B_bars = "          "
+
+u_hitpoints = [5, 5, 5, 5, 3, 10, 3, 15]
+u_hitpoints_special1 = [10, 12, 9, 10, 10, 10, 10, 10, 18, 12, 10, 6, 9, 12, 9, 18, 10, 10]
+u_abilitypoints = 20
+u_health = 35
+
+
+def delay(text, t):
+  for i in text:
+    sys.stdout.write(i)
+    sys.stdout.flush()
+    time.sleep(t)
+  sys.stdout.write('\n')
+
+def U_PROGRESS():
+  global bars
+  global prog_u
+  if prog_u in range(10, 19, 1):
+    bars = "|         "
+  elif prog_u in range(20, 29, 1):
+    bars = "||        "
+  elif prog_u in range(30, 39, 1):
+    bars = "|||       "
+  elif prog_u in range(40, 49, 1):
+    bars = "||||      "
+  elif prog_u in range(50, 59, 1):
+    bars = "|||||     "
+  elif prog_u in range(60, 69, 1):
+    bars = "||||||    "
+  elif prog_u in range(70, 79, 1):
+    bars = "|||||||   "
+  elif prog_u in range(80, 89, 1):
+    bars = "||||||||  "
+  elif prog_u in range(90, 99, 1):
+    bars = "||||||||| "
+  elif prog_u >= 100:
+    bars = "||||||||||"
+
+def B_PROGRESS():
+  global B_bars
+  global prog_B
+  if prog_B in range(10, 19, 1):
+    B_bars = "|         "
+  elif prog_B in range(20, 29, 1):
+    B_bars = "||        "
+  elif prog_B in range(30, 39, 1):
+    B_bars = "|||       "
+  elif prog_B in range(40, 49, 1):
+    B_bars = "||||      "
+  elif prog_B in range(50, 59, 1):
+    B_bars = "|||||     "
+  elif prog_B in range(60, 69, 1):
+    B_bars = "||||||    "
+  elif prog_B in range(70, 79, 1):
+    B_bars = "|||||||   "
+  elif prog_B in range(80, 89, 1):
+    B_bars = "||||||||  "
+  elif prog_B in range(90, 99, 1):
+    B_bars = "||||||||| "
+  elif prog_B >= 100:
+    B_bars = "||||||||||"
+
+def simpleThread(interval):
+    global bars
+    global prog_u
+    global prog_B
+    global g_nProcessed
+    global g_nProcessedBEAR
+    global g_nTotal
+    global variable
+    var1 = [4, 4, 4, 6, 6, 6, 8, 8, 8, 8, 8, 6, 6, 6, 4, 4]
+    var2 = [3, 3, 3, 3, 3, 5, 5, 5, 7, 7, 10, 10, 7, 5, 3]
+    outcome1 = random.choice(var1)
+    outcome2 = random.choice(var2)
+    while g_nTotal > g_nProcessed and g_nTotal > g_nProcessedBEAR:
+        time.sleep(interval)
+        g_nProcessed += outcome1
+        g_nProcessedBEAR += outcome2
+        prog_u = max(0, min(g_nProcessed, 100))
+        prog_B = max(0, min(g_nProcessedBEAR, 100))
+        U_PROGRESS()
+        B_PROGRESS()
+    thread.exit_thread()
+
+def charge():
+    global g_nTotal
+    global g_fStartTime
+    global variable
+    g_fStartTime = time.time()
+    
+    thread.start_new_thread(simpleThread, (0.33,))
+    
+    while True:
+        time.sleep(0.25)
+        fProgress = 100.0 * prog_u / g_nTotal
+        fProgressBEAR = 100.0 * prog_B / g_nTotal
+        
+        
+        os.write(1, "\rBear Attack Charging %s [%.3f %%] \t Hero Attack Charging %s [%.3f %%]" %
+                   (B_bars, fProgressBEAR, bars, fProgress))
+        sys.stdout.flush()
+        if fProgress >= 100:
+            variable += 1
+            break
+        elif fProgressBEAR >= 100:
+            break
+
+
+class Boss:
+    def __init__(self, name, Dscalar, Hscalar):
+        self.name = name
+        self.Dscalar = Dscalar
+        self.Hscalar = Hscalar
+        self.Dpoints = [3, 3, 3, 5, 5, 10, 3]
+        self.HP = 35
+        self.DpointsSCALED = []
+        
+    def apply_scalars(self):
+        self.HP *= self.Hscalar
+        self.HP = round(self.HP)
+        for x in range(len(self.Dpoints)):
+            c = round(self.Dpoints[x] * self.Dscalar)
+            self.DpointsSCALED.append(c)
+
+    def bear_fight(self):
+      delay("What will you do?", 0.02)
+      delay("OPTIONS: fight [a], give honey [b], flee [c]", 0.02)
+      bear_hitpoints = self.DpointsSCALED
+      bear_health = self.HP
+      break_loop = False
+      global g_nProcessed
+      global g_nProcessedBEAR
+      global variable
+      global prog_u
+      global prog_B
+      global bars
+      global B_bars
+      global u_hitpoints
+      global u_hitpoints_special1
+      global u_abilitypoints
+      global u_health
+      
+    
+      def current_status():
+	delay ("CURRENT STATUS: HP=%d" % u_health, 0.02)
+	delay ("                AP=%d" % u_abilitypoints, 0.02)
+      while True:
+	if break_loop:
+	  break
+	next = raw_input("> ")
+	
+	if next == "a" or next == "":
+	  charge()
+	  if variable == 1:
+	    g_nProcessed = 0
+	    prog_u = 0
+	    variable = 0
+	    bars = "          "
+	    print ""
+	    print ""
+	    current_status()
+	    delay ("\nOPTIONS: basic attack [a], special attack [b], items [c]", 0.005)
+	    i=2
+	    while i == 2:
+		next = raw_input("> ")
+	  
+		if next == "a":
+
+		    var3 = [1, 1, 2, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+		    outcome3 = random.choice(var3)
+
+		    if outcome3 == 1:
+			outcome4 = random.choice(u_hitpoints)
+			bear_health = bear_health - outcome4
+
+			if bear_health > 0:
+
+			    delay("You stab the bear with a pointed stick. Bear -%d HP" % outcome4, 0.015)
+			    delay("The bear's health dropped to %d \npress Enter to continue" % bear_health, 0.015)
+			    i=0
+			  
+			else:
+			    delay("You've defeated the bear, nice going!", 0.02)
+			    #next_room()
+			    i=0
+			    break_loop = True
+			    break
+
+		    else:
+			delay("You're attack missed..., \npress Enter to continue", 0.015)
+			i=0
+
+		elif next == "b":
+		
+		    delay("Special Attack Options: \nBody Slam....10AP [a] \nPile Driver....15AP [b] \nFirst Aid....20AP [c]", 0.015)
+		    break_loop2 = 0
+		    if break_loop2 == 0:
+		      while True:
+			next = raw_input("> ")
+			
+			if next == "a":
+		    
+			    if u_abilitypoints >= 10:
+				u_abilitypoints = u_abilitypoints - 10
+				outcome_special1 = random.choice(u_hitpoints_special1)
+				bear_health = bear_health - outcome_special1
+		      
+				if bear_health > 0:
+
+				    delay("You used Body Slam! Bear -%d HP" % outcome_special1, 0.015)
+				    delay("The bear's health dropped to %d \npress Enter to continue" % bear_health, 0.015)
+				    i=0
+				    break_loop2 = 1
+				    break
+				
+				else:
+				    delay("You've defeated the bear, nice going!", 0.02)
+				    #next_room()
+				    i=0
+				    break_loop = True
+				    break_loop2 = 1
+				    break
+				    
+				    
+			    else:
+				delay("You don't have enough AP, please choose another option", 0.02)
+				delay("OPTIONS: basic attack [a], special attack [b], items [c]", 0.02)
+				break_loop2 = 1
+				break
+
+			elif next == "b":
+			
+			    if u_abilitypoints >= 10:
+				u_abilitypoints = u_abilitypoints - 15
+				outcome_special1 = random.choice(u_hitpoints_special1)
+				damage = round(outcome_special1 * 1.33)
+				bear_health = bear_health - damage
+		      
+				if bear_health > 0:
+
+				    delay("You used Pile Driver! Bear -%d HP" % damage, 0.015)
+				    delay("The bear's health dropped to %d \npress Enter to continue" % bear_health, 0.015)
+				    i=0
+				    break_loop2 = 1
+				    break
+				else:
+				    delay("You've defeated the bear, nice going!", 0.02)
+				    #next_room()
+				    i=0
+				    break_loop = True
+				    break_loop2 = 1
+				    break
+				    
+		    
+			    else:
+				delay("You don't have enough AP, please choose another option", 0.02)
+				delay("OPTIONS: basic attack [a], special attack [b], items [c]", 0.02)
+				break_loop2 = 1
+				break
+
+			elif next == "c":
+
+			    if u_abilitypoints >= 20:
+			    
+				if u_health == 35:
+				    delay("Your health is already maxed, please choose another option", 0.02)
+				    delay("OPTIONS: basic attack [a], special attack [b], items [c]", 0.02)
+				    break_loop2 = 1
+				    break
+
+				else:
+				    u_abilitypoints = u_abilitypoints - 20
+				    u_health = 35
+				    delay("Your HP is replenished \npress Enter to continue", 0.02)
+				    i=0
+				    break_loop2 = 1
+				    break
+
+			    else:
+				delay("You don't have enough AP, please choose another option", 0.02)
+				delay("OPTIONS: basic attack [a], special attack [b], items [c]", 0.02)
+				break_loop2 = 1
+				break
+			
+			else:
+			    delay("Please choose [a], [b], or [c]", 0.02)
+
+		    else:
+		      break
+		elif next == "c":
+		  delay("You have no items at this time, please choose another option", 0.02)
+		  delay("OPTIONS: basic attack [a], special attack [b], items [c]", 0.02)
+		  
+		else:
+		  delay("Plese choose [a], [b], or [c]", 0.02)
+	  else:
+	    g_nProcessedBEAR = 0
+	    prog_B = 0
+	    variable = 0
+	    B_bars = "          "
+	    print ""
+	    outcome5 = random.choice(bear_hitpoints)
+	    u_health = u_health - outcome5
+
+	    if u_health > 0:
+
+	      delay("The bear attacks you with its claws! You lose %d hp" % outcome5, 0.015)
+	      delay("Your health dropped to %d \npress Enter to continue" % u_health, 0.015)
+
+	    else:
+		delay("The bear slapped your face off, and you died...", 0.015)
+		delay("GAMEOVER", 0.5)
+		exit(0)  
+	    
+	elif next == "b":
+	  game_over("Bear takes the honey and then throws you off the roof. GAMEOVER")
+	  
+	elif next == "c":
+	  delay("you cannot flee at this time", 0.02)
+	  delay("OPTIONS: fight [a], give honey [b], flee [c]", 0.02)
+
+	else:
+	  delay("Plese choose [a], [b], or [c]", 0.02)
+
+ 
+
+def delay(text, t):
+  for i in text:
+    sys.stdout.write(i)
+    sys.stdout.flush()
+    time.sleep(t)
+  sys.stdout.write('\n')
+  
+def game_over(l1):
+  delay (l1, 0.02)
+  exit(0)
+
+def FLOOR1():
+  while True:  
+    next = raw_input("> ")
+    if next == "a":
+	delay("Well, there's quite a few flights of stairs ahead of you, but you begin to make your way up.", 0.002)
+	delay("About half way up, you can hear the sound of two bears conversing nearby in the stairwell.", 0.002)
+	delay("Several seconds pass before one of the bears exits. The other remains there but is distracted", 0.002)
+	delay("eating honey... Let's get the jump on him! \n\nYou sneak up behind him and grab a baton from his belt.", 0.002)
+	delay("Startled and angry, the bear turns to face you.", 0.002)
+	b1.apply_scalars()
+	b1.bear_fight()
+	break
+	
+    elif next == "b":
+	delay("OK let's board the elevator but hope we don't alert the bears to our presence.", 0.002)
+	delay("You press the button for the 30th floor, and the elevator begins to climb.", 0.002)
+	delay("About halfway up, the elevator stops to pick up another passenger...", 0.002)
+	delay("You brace yourself in preparation for a fight in case it is a bear", 0.002)
+	delay("You hear a growl as the door opens, looks like you're going to have to fight...", 0.002)
+	b4.apply_scalars()
+	b4.bear_fight()
+	break
+	
+    else:
+      delay("Please select [a] or [b]", 0.02)
+	
+b1 = Boss("Gene", 0.5, 0.5)
+b2 = Boss("Ace", 2, 2)
+b3 = Boss("Paul", 5, 5)
+b4 = Boss("Peter", 1, 1)
+
+print ""  
+delay("The year is 2022... \n \nIt's winter time in Los Angeles where you've just arrived in hopes of reconciling with your ex-wife.",0.0037)
+delay("The plan is to meet at a holiday party in a high-rise building where your ex is employed. You arrive to the",0.0037)
+delay("building by limousine and head to a locker room on the first floor to change clothes for the event. As you",0.0037)
+delay("are getting changed, the building is taken over by a group of hostile bears who hold the party-goers hostage",0.0037)
+delay("and jam cell reception. You manage to slip away undected, but there is no way to contact the outside world for help...",0.0037)
+delay("\n \n \nLooks like you're going to have to take these bears down yourself.",0.0037)
+print " \n \n \n \n"
+delay("***Bear Attack 2022*** \n \na turn-based, text RPG \n \nby Thomas Amentini", 0.002)
+delay("\nPress Enter to continue",0.002)
+
+
+while True:
+  start_game = raw_input("> ")
+  if start_game == "":
+    print ""
+    
+    delay("FLOOR 1", 0.2)
+    delay("The hostages are on the 30th floor, you must make your way there discretely and try to assess the total number of bears.",0.002)
+    delay("\n Will you take the stairs or the elevator? \n(enter [a] for stairs or [b] for elevator)", 0.002)
+    break
+    
+  else:
+    delay("Please press Enter", 0.02)
+    
+
+FLOOR1()
+
+delay("Welp, that's all for now, thank you for playing my demo game! As time goes on and my skills advance, I will continue to update",0.02)
+delay("the game and incorporate cool new ideas.",0.02)
+delay("THANK YOU",0.37)
+exit(0)
